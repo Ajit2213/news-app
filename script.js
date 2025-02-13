@@ -1,69 +1,66 @@
-const API_KEY = "1d3a0eefa97b499d8fbc4ee93eeb40b7";
-const url = "https://newsapi.org/v2/everything?q=";
+const API = "7021b6b5520944c4b0d0cd2c063008c1";
+let url = "https://cors-anywhere.herokuapp.com/https://newsapi.org/v2/everything?q=";
+let input = document.querySelector(".text");
+let btn = document.querySelector(".search-btn");
 
-window.addEventListener("load", () => fetchNews("India"));
+btn.addEventListener("click", () => {
+    let query = input.value;
+    console.log(query);
+    fetchnews(query);
+    // console.log("btn was clicked");
+});
+
+window.addEventListener("load", () => {
+    fetchnews("India");
+});
 
 function reload() {
     window.location.reload();
 }
 
-async function fetchNews(query) {
-    const res = await fetch(`${url}${query}&apiKey=${API_KEY}`);
-    const data = await res.json();
-    bindData(data.articles);
+async function fetchnews(load) {
+    try {
+        let res = await axios.get(`${url}${load}&apikey=${API}`);
+        console.log(res);
+        console.log(res.data.articles);
+        let articles = res.data.articles;
+        console.log(articles);
+        bind(articles);
+    } catch (error) {
+        console.error("Error fetching news:", error);
+    }
 }
 
-function bindData(articles) {
-    const cardsContainer = document.getElementById("cards-container");
-    const newsCardTemplate = document.getElementById("template-news-card");
-
-    cardsContainer.innerHTML = "";
-
-    articles.forEach((article) => {
-        if (!article.urlToImage) return;
-        const cardClone = newsCardTemplate.content.cloneNode(true);
-        fillDataInCard(cardClone, article);
-        cardsContainer.appendChild(cardClone);
-    });
+function bind(articles) {
+    let maincard = document.querySelector(".main_card");
+    let template = document.querySelector("#template");
+    maincard.innerHTML = "";
+    for (let article of articles) {
+        if (!article.urlToImage) continue;
+        const clone = template.content.cloneNode(true);
+        cardclone(clone, article);
+        maincard.append(clone);
+    }
 }
 
-function fillDataInCard(cardClone, article) {
-    const newsImg = cardClone.querySelector("#news-img");
-    const newsTitle = cardClone.querySelector("#news-title");
-    const newsSource = cardClone.querySelector("#news-source");
-    const newsDesc = cardClone.querySelector("#news-desc");
+function cardclone(clone, article) {
+    let img = clone.querySelector("#pic");
+    let h3 = clone.querySelector("#news-title");
+    let p = clone.querySelector(".news-deck");
+    let h5 = clone.querySelector("#source");
 
-    newsImg.src = article.urlToImage;
-    newsTitle.innerHTML = article.title;
-    newsDesc.innerHTML = article.description;
+    img.setAttribute("src", article.urlToImage);
+    h3.innerHTML = article.title;
+    p.innerHTML = article.description;
 
-    const date = new Date(article.publishedAt).toLocaleString("en-US", {
-        timeZone: "Asia/Jakarta",
-    });
+    const time = new Date(article.publishedAt).toLocaleString("en-us", { timeZone: "Asia/Jakarta" });
+    h5.innerHTML = `${article.source.name}, ${time}`;
 
-    newsSource.innerHTML = `${article.source.name} · ${date}`;
-
-    cardClone.firstElementChild.addEventListener("click", () => {
+    clone.firstElementChild.addEventListener("click", () => {
         window.open(article.url, "_blank");
     });
 }
 
-let curSelectedNav = null;
-function onNavItemClick(id) {
-    fetchNews(id);
-    const navItem = document.getElementById(id);
-    curSelectedNav?.classList.remove("active");
-    curSelectedNav = navItem;
-    curSelectedNav.classList.add("active");
+function onNavitem(id) {
+    fetchnews(id);
 }
-
-const searchButton = document.getElementById("search-button");
-const searchText = document.getElementById("search-text");
-
-searchButton.addEventListener("click", () => {
-    const query = searchText.value;
-    if (!query) return;
-    fetchNews(query);
-    curSelectedNav?.classList.remove("active");
-    curSelectedNav = null;
-});
